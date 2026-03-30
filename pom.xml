@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Proyecto Maven: define dependencias, compilación Java 17 y plugin de Spring Boot para el microservicio de órdenes de mascotas -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion> <!-- Versión del modelo POM requerida por Maven -->
+
+    <!-- Hereda versiones de dependencias y configuración por defecto de Spring Boot 3.2.3 -->
+    <parent>
+        <groupId>org.springframework.boot</groupId> <!-- Grupo del proyecto padre de Spring Boot -->
+        <artifactId>spring-boot-starter-parent</artifactId> <!-- Artefacto padre que gestiona versiones -->
+        <version>3.2.3</version> <!-- Versión de Spring Boot utilizada en el proyecto -->
+        <relativePath/> <!-- Busca el parent en el repositorio Maven, no en el filesystem local -->
+    </parent>
+
+    <!-- Coordenadas del artefacto que genera este proyecto -->
+    <groupId>com.duoc</groupId> <!-- Grupo de la organización: Duoc UC -->
+    <artifactId>mascotas-ordenes</artifactId> <!-- Nombre del artefacto (JAR resultante) -->
+    <version>0.0.1-SNAPSHOT</version> <!-- Versión en desarrollo (SNAPSHOT = no estable) -->
+    <name>mascotas-ordenes</name> <!-- Nombre legible del proyecto -->
+    <description>Microservicio de gestión de órdenes de productos para mascotas - Duoc UC</description> <!-- Descripción del propósito del microservicio -->
+
+    <!-- Propiedades globales del build (versión del lenguaje Java) -->
+    <properties>
+        <java.version>17</java.version> <!-- Compila el código fuente con Java 17 (LTS) -->
+    </properties>
+
+    <!-- Librerías necesarias en tiempo de compilación y ejecución -->
+    <dependencies>
+        <!-- REST: Tomcat embebido, Jackson JSON, Spring MVC para exponer endpoints HTTP -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId> <!-- Grupo de Spring Boot -->
+            <artifactId>spring-boot-starter-web</artifactId> <!-- Starter web: incluye servidor y framework MVC -->
+        </dependency>
+
+        <!-- Validación: Bean Validation (Hibernate Validator) para validar datos de entrada en la API -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId> <!-- Grupo de Spring Boot -->
+            <artifactId>spring-boot-starter-validation</artifactId> <!-- Starter de validación: @NotBlank, @Email, @Min, etc. -->
+        </dependency>
+
+        <!-- JUnit 5, Mockito, Spring Test: solo se usa al compilar/ejecutar tests -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId> <!-- Grupo de Spring Boot -->
+            <artifactId>spring-boot-starter-test</artifactId> <!-- Starter de pruebas unitarias e integración -->
+            <scope>test</scope> <!-- Solo disponible en fase de test, no se empaqueta en el JAR final -->
+        </dependency>
+    </dependencies>
+
+    <!-- Plugins de Maven: empaquetado ejecutable (fat JAR) con java -jar -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId> <!-- Plugin oficial de Spring Boot -->
+                <artifactId>spring-boot-maven-plugin</artifactId> <!-- Genera un JAR ejecutable con todas las dependencias -->
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
