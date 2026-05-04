@@ -1,76 +1,105 @@
-package com.duoc.mascotasordenes.controller; // Paquete de controladores REST (capa de presentación / API HTTP)
+package com.duoc.mascotasordenes.controller;
 
-import com.duoc.mascotasordenes.entity.Producto; // Entidad que representa un producto para mascotas
-import com.duoc.mascotasordenes.service.ProductoService; // Capa de servicio con la lógica de negocio de productos
-import jakarta.validation.Valid; // Activa la validación automática del cuerpo de la petición según las anotaciones de la entidad
-import org.slf4j.Logger; // Interfaz estándar de logging
-import org.slf4j.LoggerFactory; // Fábrica para obtener un Logger vinculado a esta clase
-import org.springframework.http.HttpStatus; // Enumeración de códigos HTTP
-import org.springframework.http.ResponseEntity; // Permite construir respuestas HTTP con cuerpo y código de estado
-import org.springframework.web.bind.annotation.DeleteMapping; // Marca métodos que atienden peticiones HTTP DELETE
-import org.springframework.web.bind.annotation.GetMapping; // Marca métodos que atienden peticiones HTTP GET
-import org.springframework.web.bind.annotation.PathVariable; // Inyecta un segmento de la URL como parámetro del método
-import org.springframework.web.bind.annotation.PostMapping; // Marca métodos que atienden peticiones HTTP POST
-import org.springframework.web.bind.annotation.PutMapping; // Marca métodos que atienden peticiones HTTP PUT
-import org.springframework.web.bind.annotation.RequestBody; // Deserializa el cuerpo JSON de la petición a un objeto Java
-import org.springframework.web.bind.annotation.RequestMapping; // Define el prefijo común de ruta para todos los endpoints
-import org.springframework.web.bind.annotation.RestController; // Controlador REST: registra como bean y serializa respuestas a JSON
+import com.duoc.mascotasordenes.entity.Producto;
+import com.duoc.mascotasordenes.service.ProductoService;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List; // Interfaz de colección ordenada para devolver listas de productos
+import java.util.List;
 
-@RestController // Registra esta clase como bean de Spring y convierte automáticamente las respuestas a JSON
-@RequestMapping("/api/productos") // Todas las rutas de este controlador empiezan por /api/productos
-public class ProductoController { // Expone la API HTTP REST para productos de mascotas
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-    private static final Logger log = LoggerFactory.getLogger(ProductoController.class); // Logger de la capa REST
+@RestController
+@RequestMapping("/api/productos")
+public class ProductoController {
 
-    private final ProductoService productoService; // Dependencia inmutable al servicio de productos
+    private static final Logger log = LoggerFactory.getLogger(ProductoController.class);
 
-    public ProductoController(ProductoService productoService) { // Inyección de dependencias por constructor
-        this.productoService = productoService; // Asigna el servicio inyectado por Spring
+    private final ProductoService productoService;
+
+    public ProductoController(ProductoService productoService) {
+        this.productoService = productoService;
     }
 
-    @GetMapping // GET /api/productos → devuelve todos los productos del catálogo
-    public List<Producto> obtenerTodos() { // Endpoint para listar todos los productos disponibles
-        log.debug("GET /api/productos"); // Log DEBUG de la operación
-        return productoService.obtenerTodos(); // Delega al servicio y retorna la lista completa como JSON
+    // Envuelve la entidad en un EntityModel y le asocia los enlaces HATEOAS del recurso.
+    private EntityModel<Producto> toModel(Producto producto) {
+        return EntityModel.of(producto,
+                linkTo(methodOn(ProductoController.class).obtenerPorId(producto.getId())).withSelfRel(),                            // self
+                linkTo(methodOn(ProductoController.class).obtenerTodos()).withRel("productos"),                                     // colección
+                linkTo(methodOn(ProductoController.class).obtenerPorCategoria(producto.getCategoria())).withRel("categoria"),       // productos de la misma categoría
+                linkTo(methodOn(ProductoController.class).actualizar(producto.getId(), producto)).withRel("actualizar"),            // PUT
+                linkTo(methodOn(ProductoController.class).eliminar(producto.getId())).withRel("eliminar"));                         // DELETE
     }
 
-    @GetMapping("/{id}") // GET /api/productos/{id} → busca un producto por su identificador
-    public Producto obtenerPorId(@PathVariable Long id) { // El id viene del segmento de URL
-        log.debug("GET /api/productos/{}", id); // Log DEBUG con el id buscado
-        return productoService.obtenerPorId(id); // El servicio lanza "404" si no existe
+    @GetMapping // Catálogo completo envuelto en CollectionModel.
+    public CollectionModel<EntityModel<Producto>> obtenerTodos() {
+        log.debug("GET /api/productos");
+        List<EntityModel<Producto>> productos = productoService.obtenerTodos().stream()
+                .map(this::toModel)
+                .toList();
+        return CollectionModel.of(productos,
+                linkTo(methodOn(ProductoController.class).obtenerTodos()).withSelfRel());
     }
 
-    @GetMapping("/categoria/{categoria}") // GET /api/productos/categoria/{categoria} → filtra por categoría
-    public List<Producto> obtenerPorCategoria(@PathVariable String categoria) { // La categoría viene del segmento de URL
-        log.debug("GET /api/productos/categoria/{}", categoria); // Log DEBUG con el filtro
-        return productoService.obtenerPorCategoria(categoria); // Delega al servicio y retorna la lista filtrada como JSON
+    @GetMapping("/{id}") // Detalle por id; 404 si no existe.
+    public EntityModel<Producto> obtenerPorId(@PathVariable Long id) {
+        log.debug("GET /api/productos/{}", id);
+        return toModel(productoService.obtenerPorId(id));
     }
 
-    @GetMapping("/buscar/{nombre}") // GET /api/productos/buscar/{nombre} → busca por coincidencia parcial en nombre
-    public List<Producto> buscarPorNombre(@PathVariable String nombre) { // El texto de búsqueda viene del segmento de URL
-        log.debug("GET /api/productos/buscar/{}", nombre); // Log DEBUG con el texto buscado
-        return productoService.buscarPorNombre(nombre); // Delega al servicio y retorna los productos que coinciden
+    @GetMapping("/categoria/{categoria}") // Filtra el catálogo por categoría.
+    public CollectionModel<EntityModel<Producto>> obtenerPorCategoria(@PathVariable String categoria) {
+        log.debug("GET /api/productos/categoria/{}", categoria);
+        List<EntityModel<Producto>> productos = productoService.obtenerPorCategoria(categoria).stream()
+                .map(this::toModel)
+                .toList();
+        return CollectionModel.of(productos,
+                linkTo(methodOn(ProductoController.class).obtenerPorCategoria(categoria)).withSelfRel(),
+                linkTo(methodOn(ProductoController.class).obtenerTodos()).withRel("productos"));
     }
 
-    @PostMapping // POST /api/productos → registra un nuevo producto
-    public ResponseEntity<Producto> crear(@Valid @RequestBody Producto producto) { // @Valid activa validaciones; @RequestBody deserializa
-        log.info("POST /api/productos - creando producto '{}'", producto.getNombre()); // Log INFO de creación
-        Producto creado = productoService.crear(producto); // Delega al servicio
-        return ResponseEntity.status(HttpStatus.CREATED).body(creado); // "201" Created + cuerpo con el producto creado
+    @GetMapping("/buscar/{nombre}") // Búsqueda parcial por nombre (LIKE %nombre%).
+    public CollectionModel<EntityModel<Producto>> buscarPorNombre(@PathVariable String nombre) {
+        log.debug("GET /api/productos/buscar/{}", nombre);
+        List<EntityModel<Producto>> productos = productoService.buscarPorNombre(nombre).stream()
+                .map(this::toModel)
+                .toList();
+        return CollectionModel.of(productos,
+                linkTo(methodOn(ProductoController.class).buscarPorNombre(nombre)).withSelfRel(),
+                linkTo(methodOn(ProductoController.class).obtenerTodos()).withRel("productos"));
     }
 
-    @PutMapping("/{id}") // PUT /api/productos/{id} → actualiza todos los datos de un producto existente
-    public Producto actualizar(@PathVariable Long id, @Valid @RequestBody Producto producto) { // id por URL, datos por cuerpo JSON
-        log.info("PUT /api/productos/{}", id); // Log INFO de actualización
-        return productoService.actualizar(id, producto); // Delega al servicio
+    @PostMapping // Alta del producto; @Valid dispara las validaciones de la entidad.
+    public ResponseEntity<EntityModel<Producto>> crear(@Valid @RequestBody Producto producto) {
+        log.info("POST /api/productos - creando producto '{}'", producto.getNombre());
+        Producto creado = productoService.crear(producto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(toModel(creado));
     }
 
-    @DeleteMapping("/{id}") // DELETE /api/productos/{id} → elimina un producto por id
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) { // id por URL
-        log.warn("DELETE /api/productos/{}", id); // Log WARN
-        productoService.eliminar(id); // Delega al servicio; lanza "404" si no existe
-        return ResponseEntity.noContent().build(); // "204" No Content
+    @PutMapping("/{id}") // Actualización completa del producto.
+    public EntityModel<Producto> actualizar(@PathVariable Long id, @Valid @RequestBody Producto producto) {
+        log.info("PUT /api/productos/{}", id);
+        return toModel(productoService.actualizar(id, producto));
+    }
+
+    @DeleteMapping("/{id}") // Baja del producto; responde 204.
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        log.warn("DELETE /api/productos/{}", id);
+        productoService.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 }

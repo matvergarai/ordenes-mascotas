@@ -1,95 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Proyecto Maven: define dependencias, compilación Java 17 y plugin de Spring Boot para el microservicio de órdenes de mascotas -->
+<!-- Microservicio mascotas-ordenes: Spring Boot 3.2.3 + Java 17 + Oracle ADB. -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion> <!-- Versión del modelo POM requerida por Maven -->
+    <modelVersion>4.0.0</modelVersion>
 
-    <!-- Hereda versiones de dependencias y configuración por defecto de Spring Boot 3.2.3 -->
     <parent>
-        <groupId>org.springframework.boot</groupId> <!-- Grupo del proyecto padre de Spring Boot -->
-        <artifactId>spring-boot-starter-parent</artifactId> <!-- Artefacto padre que gestiona versiones -->
-        <version>3.2.3</version> <!-- Versión de Spring Boot utilizada en el proyecto -->
-        <relativePath/> <!-- Busca el parent en el repositorio Maven, no en el filesystem local -->
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.3</version>
+        <relativePath/>
     </parent>
 
-    <!-- Coordenadas del artefacto que genera este proyecto -->
-    <groupId>com.duoc</groupId> <!-- Grupo de la organización: Duoc UC -->
-    <artifactId>mascotas-ordenes</artifactId> <!-- Nombre del artefacto (JAR resultante) -->
-    <version>0.0.1-SNAPSHOT</version> <!-- Versión en desarrollo (SNAPSHOT = no estable) -->
-    <name>mascotas-ordenes</name> <!-- Nombre legible del proyecto -->
-    <description>Microservicio de gestión de órdenes de productos para mascotas - Duoc UC</description> <!-- Descripción del propósito del microservicio -->
+    <groupId>com.duoc</groupId>
+    <artifactId>mascotas-ordenes</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>mascotas-ordenes</name>
+    <description>Microservicio de gestión de órdenes de productos para mascotas - Duoc UC</description>
 
-    <!-- Propiedades globales del build (versión del lenguaje Java y versión del driver Oracle) -->
     <properties>
-        <java.version>17</java.version> <!-- Compila el código fuente con Java 17 (LTS) -->
-        <oracle.jdbc.version>23.3.0.23.09</oracle.jdbc.version> <!-- Versión del driver Oracle JDBC compatible con Autonomous Database -->
+        <java.version>17</java.version>
+        <oracle.jdbc.version>23.3.0.23.09</oracle.jdbc.version>
     </properties>
 
-    <!-- Librerías necesarias en tiempo de compilación y ejecución -->
     <dependencies>
-        <!-- REST: Tomcat embebido, Jackson JSON, Spring MVC para exponer endpoints HTTP -->
+        <!-- Web (Spring MVC + Tomcat embebido + Jackson). -->
         <dependency>
-            <groupId>org.springframework.boot</groupId> <!-- Grupo de Spring Boot -->
-            <artifactId>spring-boot-starter-web</artifactId> <!-- Starter web: incluye servidor y framework MVC -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- JPA/Hibernate: mapeo objeto-relacional (ORM) para persistir entidades en Oracle -->
+        <!-- Spring Data JPA + Hibernate. -->
         <dependency>
-            <groupId>org.springframework.boot</groupId> <!-- Grupo de Spring Boot -->
-            <artifactId>spring-boot-starter-data-jpa</artifactId> <!-- Incluye Hibernate y Spring Data JPA (JpaRepository) -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- Validación: Bean Validation (Hibernate Validator) para validar datos de entrada en la API -->
+        <!-- Bean Validation (@NotNull, @Size, @Pattern, @Email, etc.). -->
         <dependency>
-            <groupId>org.springframework.boot</groupId> <!-- Grupo de Spring Boot -->
-            <artifactId>spring-boot-starter-validation</artifactId> <!-- Starter de validación: @NotBlank, @Email, @Min, etc. -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Seguridad: autenticación HTTP Basic, autorización por roles y configuración CORS -->
+        <!-- Spring Security: HTTP Basic + autorización por roles + CORS. -->
         <dependency>
-            <groupId>org.springframework.boot</groupId> <!-- Grupo de Spring Boot -->
-            <artifactId>spring-boot-starter-security</artifactId> <!-- Starter de Spring Security para proteger los endpoints REST -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- Driver Oracle JDBC: conexión a Oracle Autonomous Database desde Java 17 -->
+        <!-- HATEOAS: EntityModel/CollectionModel + WebMvcLinkBuilder, serializador HAL. -->
         <dependency>
-            <groupId>com.oracle.database.jdbc</groupId> <!-- Grupo oficial de Oracle en Maven Central -->
-            <artifactId>ojdbc11</artifactId> <!-- Driver JDBC para Java 11+ (compatible con Java 17) -->
-            <version>${oracle.jdbc.version}</version> <!-- Versión centralizada en la propiedad definida arriba -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-hateoas</artifactId>
         </dependency>
 
-        <!-- Librerías PKI de Oracle: soporte para Wallet mTLS de Autonomous Database -->
-        <!-- Desde ojdbc 21c+, oraclepki.jar ya incluye osdt_core y osdt_cert, por eso NO se agregan por separado -->
+        <!-- Oracle JDBC Thin para Java 17 (compatible con Autonomous Database). -->
         <dependency>
-            <groupId>com.oracle.database.security</groupId> <!-- Grupo de librerías de seguridad de Oracle -->
-            <artifactId>oraclepki</artifactId> <!-- Implementación PKI propia de Oracle para leer cwallet.sso / ewallet.p12 -->
-            <version>${oracle.jdbc.version}</version> <!-- Se alinea con la versión del driver -->
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+            <version>${oracle.jdbc.version}</version>
         </dependency>
 
-        <!-- JUnit 5, Mockito, Spring Test: solo se usa al compilar/ejecutar tests -->
+        <!-- PKI Oracle para Wallet mTLS (osdt_core/osdt_cert ya van embebidos en oraclepki 21c+). -->
         <dependency>
-            <groupId>org.springframework.boot</groupId> <!-- Grupo de Spring Boot -->
-            <artifactId>spring-boot-starter-test</artifactId> <!-- Starter de pruebas unitarias e integración -->
-            <scope>test</scope> <!-- Solo disponible en fase de test, no se empaqueta en el JAR final -->
+            <groupId>com.oracle.database.security</groupId>
+            <artifactId>oraclepki</artifactId>
+            <version>${oracle.jdbc.version}</version>
         </dependency>
 
-        <!-- Seguridad: utilidades de testing para Spring Security -->
+        <!-- JUnit 5 + Mockito + Spring Test. -->
         <dependency>
-            <groupId>org.springframework.security</groupId> <!-- Grupo de Spring Security -->
-            <artifactId>spring-security-test</artifactId> <!-- Soporte de @WithMockUser y utilidades para pruebas de seguridad -->
-            <scope>test</scope> <!-- Solo disponible en la fase de test -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Spring Security Test: @WithMockUser y helpers para MockMvc. -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
-    <!-- Plugins de Maven: empaquetado ejecutable (fat JAR) con java -jar -->
     <build>
         <plugins>
+            <!-- Empaqueta el fat JAR ejecutable (java -jar). -->
             <plugin>
-                <groupId>org.springframework.boot</groupId> <!-- Plugin oficial de Spring Boot -->
-                <artifactId>spring-boot-maven-plugin</artifactId> <!-- Genera un JAR ejecutable con todas las dependencias -->
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
-
 </project>

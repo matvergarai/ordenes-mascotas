@@ -1,12 +1,12 @@
-package com.duoc.mascotasordenes.exception; // Paquete donde viven las excepciones personalizadas del dominio
+package com.duoc.mascotasordenes.exception;
 
 /**
- * Excepción lanzada cuando se busca un recurso por ID (o campo único) y no existe en la base de datos.
- * El @ControllerAdvice la convierte en una respuesta HTTP 404 Not Found con cuerpo JSON coherente.
+ * Recurso buscado por id (o clave única) inexistente en BD. Mapeada a HTTP 404 por el
+ * {@link GlobalExceptionHandler}.
  */
-public class RecursoNoEncontradoException extends RuntimeException { // RuntimeException: no obliga a declararla con throws
+public class RecursoNoEncontradoException extends RuntimeException {
 
-    public RecursoNoEncontradoException(String mensaje) { // Constructor que recibe el mensaje descriptivo
-        super(mensaje); // Delega el mensaje al constructor de RuntimeException (se expone con getMessage())
+    public RecursoNoEncontradoException(String mensaje) {
+        super(mensaje);
     }
 }

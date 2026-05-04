@@ -1,0 +1,11 @@
+# Excluye archivos del contexto de Docker para reducir el tamaño de la imagen y acelerar el build
+target/
+.idea/
+.vscode/
+*.iml
+.git/
+.gitignore
+*.log
+HELP.md
+# Excluye también el .mvn/wrapper/maven-wrapper.jar si existe (se descarga al build)
+.mvn/wrapper/maven-wrapper.jar

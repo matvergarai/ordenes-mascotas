@@ -1,17 +1,15 @@
-package com.duoc.mascotasordenes.repository; // Paquete de la capa de acceso a datos (repositorio de productos)
+package com.duoc.mascotasordenes.repository;
 
-import com.duoc.mascotasordenes.entity.Producto; // Entidad JPA que se persiste/consulta
-import org.springframework.data.jpa.repository.JpaRepository; // Interfaz base de Spring Data JPA con CRUD y paginación
-import org.springframework.stereotype.Repository; // Registra la clase como componente de persistencia en el contexto Spring
+import com.duoc.mascotasordenes.entity.Producto;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List; // Colección devuelta por los métodos de búsqueda
+import java.util.List;
 
-@Repository // Spring crea una instancia única del repositorio y la inyecta donde se necesite
-public interface ProductoRepository extends JpaRepository<Producto, Long> { // JpaRepository provee findAll, findById, save, delete, etc.
+@Repository
+public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
-    // Derivación de consulta: filtra productos por categoría sin distinguir mayúsculas/minúsculas
-    List<Producto> findByCategoriaIgnoreCase(String categoria); // Retorna los productos de la categoría indicada (ALIMENTO, JUGUETE, etc.)
+    List<Producto> findByCategoriaIgnoreCase(String categoria);              // Filtro exacto por categoría (PERRO/GATO/AVE/OTROS)
 
-    // Derivación de consulta: búsqueda parcial por nombre sin distinguir mayúsculas/minúsculas
-    List<Producto> findByNombreContainingIgnoreCase(String nombre); // Retorna productos cuyo nombre contenga el texto ingresado
+    List<Producto> findByNombreContainingIgnoreCase(String nombre);          // Búsqueda parcial por nombre
 }

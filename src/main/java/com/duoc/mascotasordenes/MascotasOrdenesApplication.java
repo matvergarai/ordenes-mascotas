@@ -1,12 +1,12 @@
-package com.duoc.mascotasordenes; // Paquete raíz del microservicio de órdenes de productos para mascotas
+package com.duoc.mascotasordenes;
 
-import org.springframework.boot.SpringApplication; // Punto de entrada para arrancar Spring Boot
-import org.springframework.boot.autoconfigure.SpringBootApplication; // Activa autoconfiguración, escaneo de componentes y configuración
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication // Marca la clase como aplicación Spring Boot (equivale a @Configuration + @EnableAutoConfiguration + @ComponentScan)
-public class MascotasOrdenesApplication { // Clase principal que inicia el microservicio
+@SpringBootApplication // Habilita autoconfiguración, component scan y configuración Spring Boot.
+public class MascotasOrdenesApplication {
 
-    public static void main(String[] args) { // Método estándar de Java: arranque del programa
-        SpringApplication.run(MascotasOrdenesApplication.class, args); // Crea el contexto de Spring, registra beans y levanta el servidor Tomcat embebido
+    public static void main(String[] args) {
+        SpringApplication.run(MascotasOrdenesApplication.class, args); // Levanta el contexto y el servidor embebido (puerto 8082).
     }
 }
